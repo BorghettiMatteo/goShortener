@@ -4,7 +4,6 @@ import (
 	"context"
 	. "main/models"
 	"net/http"
-	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,26 +11,33 @@ import (
 var ctx = context.Background()
 
 func ComputeShortener(c *fiber.Ctx) error {
-	param := c.Params("url")
-	return c.SendString(param)
+	uri := c.Params("url")
+
+	search := Database.HGet(ctx, uri, "expanded")
+	if search == nil {
+		return c.SendStatus(http.StatusNotFound)
+	}
+	c.SendString(search.Val())
+	return c.Redirect(search.Val(), http.StatusPermanentRedirect)
 }
 
 func CreateShortener(c *fiber.Ctx) error {
-	urlRequest := new(UrlRequest)
-	if err := c.BodyParser(urlRequest); err != nil {
+	urlRequestBody := new(UrlRequestBody)
+	if err := c.BodyParser(urlRequestBody); err != nil {
 		return err
 	}
 
 	// save to redis
 	//if item already in, return current item
-	if dump := Database.Exists(ctx, urlRequest.Plain); dump.Val() != 0 {
-		content := Database.HGetAll(ctx, urlRequest.Plain)
+	if dump := Database.Exists(ctx, urlRequestBody.Plain); dump.Val() != 0 {
+		content := Database.HGetAll(ctx, urlRequestBody.Plain)
 		c.SendStatus(http.StatusFound)
-		return c.SendString(content.Val()["shortened"])
+		return c.SendString(content.Val()["expanded"])
 	}
 
 	// create the entry on redis table
-	urlRequest.UrlEncoder(os.Getenv("CURRENT_API_VERSION"))
-	Database.HSet(ctx, urlRequest.Plain, "shortened", urlRequest.Shortened)
-	return c.SendStatus(http.StatusCreated)
+	encodedUrlValue := urlRequestBody.UrlEncoder()
+	Database.HSet(ctx, encodedUrlValue, "expanded", urlRequestBody.Plain)
+	c.SendStatus(http.StatusCreated)
+	return c.SendString("0.0.0.0:8080/" + urlRequestBody.ApiVersion + "/" + encodedUrlValue)
 }

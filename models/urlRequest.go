@@ -5,15 +5,20 @@ import (
 	"encoding/hex"
 )
 
-type UrlRequest struct {
+type Urlo struct {
 	Shortened string `json:"shortened"`
 	Plain     string `json:"plain"`
 }
 
-func (ur *UrlRequest) UrlEncoder(apiVersion string) {
+type UrlRequestBody struct {
+	ApiVersion string `json:"apiversion"`
+	Plain      string `json:"plain"`
+}
+
+func (ur *UrlRequestBody) UrlEncoder() string {
 	sha1 := crypto.SHA1.New()
 	sha1.Write([]byte(ur.Plain))
 	dump := sha1.Sum(nil)
 	encodedUrl := hex.EncodeToString(dump)
-	ur.Shortened = "0.0.0.0:8080" + apiVersion + "url/" + string(encodedUrl)
+	return string(encodedUrl)
 }
