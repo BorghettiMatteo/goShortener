@@ -41,9 +41,5 @@ func CreateShortener(c *fiber.Ctx) error {
 	encodedUrlValue := urlRequestBody.UrlEncoder()
 	Database.HSet(ctx, encodedUrlValue, "expanded", urlRequestBody.Plain)
 	c.SendStatus(http.StatusCreated)
-	return c.SendString("0.0.0.0:8080/" + urlRequestBody.ApiVersion + "/" + encodedUrlValue)
-}
-
-func getAllUrl(c *fiber.Ctx) error {
-	Database.Keys(ctx, "*")
+	return c.SendString("0.0.0.0:8080/" + urlRequestBody.ApiVersion + "/shortener/" + encodedUrlValue)
 }
