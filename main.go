@@ -15,9 +15,8 @@ func sampleServer(c *fiber.Ctx) error {
 func setupServer() {
 	app := fiber.New()
 	v1 := app.Group("/v1")
-	v1.Get("/", sampleServer)
-	v1.Post("/shortener", routes.GetShortened)
-	v1.Get("/prova1", sampleServer)
+	v1.Post("/shortener", routes.CreateShortener)
+	v1.Get("/url/:url", routes.ComputeShortener)
 
 	//database
 	models.CreateDatabase()

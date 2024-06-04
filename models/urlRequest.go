@@ -10,10 +10,10 @@ type UrlRequest struct {
 	Plain     string `json:"plain"`
 }
 
-func (ur *UrlRequest) UrlEncoder() {
+func (ur *UrlRequest) UrlEncoder(apiVersion string) {
 	sha1 := crypto.SHA1.New()
 	sha1.Write([]byte(ur.Plain))
 	dump := sha1.Sum(nil)
 	encodedUrl := hex.EncodeToString(dump)
-	ur.Shortened = "0.0.0.0:8080/url/" + string(encodedUrl)
+	ur.Shortened = "0.0.0.0:8080" + apiVersion + "url/" + string(encodedUrl)
 }
