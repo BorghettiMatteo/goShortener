@@ -19,7 +19,6 @@ func setupServer() {
 	v1.Post("/shortener", routes.CreateShortener)
 	//get true url from shortenedUrl
 	v1.Get("/shortener/:url", routes.ComputeShortener)
-
 	//database
 	models.CreateDatabase()
 	ctx := context.Background()

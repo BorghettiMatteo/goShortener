@@ -18,6 +18,8 @@ func ComputeShortener(c *fiber.Ctx) error {
 		return c.SendStatus(http.StatusNotFound)
 	}
 	c.SendString(search.Val())
+
+	//redirect to unshortened url
 	return c.Redirect(search.Val(), http.StatusPermanentRedirect)
 }
 
@@ -40,4 +42,8 @@ func CreateShortener(c *fiber.Ctx) error {
 	Database.HSet(ctx, encodedUrlValue, "expanded", urlRequestBody.Plain)
 	c.SendStatus(http.StatusCreated)
 	return c.SendString("0.0.0.0:8080/" + urlRequestBody.ApiVersion + "/" + encodedUrlValue)
+}
+
+func getAllUrl(c *fiber.Ctx) error {
+	Database.Keys(ctx, "*")
 }
