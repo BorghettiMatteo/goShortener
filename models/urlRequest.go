@@ -5,11 +5,6 @@ import (
 	"encoding/hex"
 )
 
-type Urlo struct {
-	Shortened string `json:"shortened"`
-	Plain     string `json:"plain"`
-}
-
 type UrlRequestBody struct {
 	ApiVersion string `json:"apiversion"`
 	Plain      string `json:"plain"`
