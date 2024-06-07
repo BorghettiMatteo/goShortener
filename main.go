@@ -1,19 +1,22 @@
 package main
 
 import (
+	"main/handlers"
+
+	"main/models"
+
 	"github.com/gofiber/fiber/v2"
-	"main.go/models"
 )
 
 func main() {
 	// init database
 	var db models.MongoCon
 	db.CreateDb()
-	defer db.KillMongoDB()
+	//defer db.KillMongoDB()
 
 	// init fiber
 	app := fiber.New()
-	app.Add("POST", "/pastabin", nil)
+	app.Post("/pastabin", handlers.CreatePastaBin)
 	app.Get("/", nil)
 	app.Listen(":5555")
 }

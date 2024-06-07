@@ -10,9 +10,7 @@ import (
 
 var Db *mongo.Client
 
-type MongoCon struct {
-	//Conn *mongo.Client
-}
+type MongoCon struct{}
 
 func (client *MongoCon) CreateDb() {
 
@@ -22,7 +20,7 @@ func (client *MongoCon) CreateDb() {
 	}
 
 	var err error
-	Db, err := mongo.Connect(context.TODO(), options.Client().
+	Db, err = mongo.Connect(context.TODO(), options.Client().
 		ApplyURI(
 			dbString,
 		),
@@ -34,6 +32,9 @@ func (client *MongoCon) CreateDb() {
 	if err != nil {
 		println(err.Error())
 	}
+	// initialize collection
+	Db.Database("db").Collection("pastamexs")
+
 }
 
 func (client *MongoCon) KillMongoDB() {
