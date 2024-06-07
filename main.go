@@ -17,6 +17,6 @@ func main() {
 	// init fiber
 	app := fiber.New()
 	app.Post("/pastabin", handlers.CreatePastaBin)
-	app.Get("/", nil)
+	app.Get("/:pastabinid", handlers.GetPastaBin)
 	app.Listen(":5555")
 }
