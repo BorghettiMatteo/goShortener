@@ -1,13 +1,14 @@
-FROM docker.io/golang:1.22
+FROM golang:1.22-alpine
 
 WORKDIR /app
 
-COPY . ./
+COPY * ./
 
-RUN go mod download
+RUN go mod download main 
 
-RUN go build 
+RUN CGO_ENABLED=0 GOOS=linux go build main.go
 
-EXPOSE 8080
+EXPOSE 5555
 
-CMD ["./main"]
+CMD ["./main.go"]
+

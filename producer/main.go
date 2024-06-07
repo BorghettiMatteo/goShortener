@@ -76,6 +76,25 @@ func getPoems(c *fiber.Ctx) error {
 	return c.SendStatus(http.StatusOK)
 }
 
+func getAllPoems(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	coll := client.Database("db").Collection("poems")
+	cur, err := coll.Find(ctx, bson.M{})
+	if err != nil {
+		return c.SendStatus(http.StatusInternalServerError)
+
+	}
+
+	//define results
+	results := new([]models.Poem)
+	err = cur.All(ctx, results)
+	if err != nil {
+		return c.SendString(err.Error())
+	}
+	return c.JSON(results)
+}
+
 func initServer() {
 	//init rabbit mq server
 	globalConnMQ, err := amqp.Dial("amqp://guest:guest@0.0.0.0:5672/")
@@ -93,8 +112,9 @@ func initServer() {
 	_, _ = globalChannelMQ.QueueDeclare("poem", false, false, false, false, nil)
 	//webserver
 	app := fiber.New()
-	app.Get("/", createMessage)
+	app.Post("/", createMessage)
 	app.Get("/poems", getPoems)
+	app.Get("/all", getAllPoems)
 
 	mongoDbString := "mongodb://0.0.0.0:27017"
 	tM := reflect.TypeOf(bson.M{})
