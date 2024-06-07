@@ -7,9 +7,12 @@ import (
 	"main/models"
 	"math/rand"
 	"net/http"
+	"reflect"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -52,20 +55,25 @@ func createMessage(c *fiber.Ctx) error {
 }
 
 func getPoems(c *fiber.Ctx) error {
-	err := client.Ping(context.TODO(), nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	coll := client.Database("db").Collection("poems")
+	cur, err := coll.Find(ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}
-	coll := client.Database("db").Collection("poems")
-	ret, err := coll.Find(context.TODO(), bson.D{{Key: "author", Value: "William Shakespeare"}})
 
-	if err != nil {
-		println(err.Error())
+	defer cur.Close(ctx)
+	for cur.Next(ctx) {
+		a := new(models.Poem)
+		bson.Unmarshal(cur.Current, &a)
+		// do something with result....
+		c.JSON(a)
 	}
-	var dump *[]models.Poem
-	ret.All(context.TODO(), dump)
-	return c.JSON(dump)
-
+	if err := cur.Err(); err != nil {
+		log.Fatal(err)
+	}
+	return c.SendStatus(http.StatusOK)
 }
 
 func initServer() {
@@ -89,10 +97,13 @@ func initServer() {
 	app.Get("/poems", getPoems)
 
 	mongoDbString := "mongodb://0.0.0.0:27017"
+	tM := reflect.TypeOf(bson.M{})
+	reg := bson.NewRegistry()
+	reg.RegisterTypeMapEntry(bsontype.Type(0x03), tM)
+	//.RegisterTypeMapEntry(bsontype.EmbeddedDocument, tM).Build()
 	client, err = mongo.Connect(context.TODO(), options.Client().
-		ApplyURI(
-			mongoDbString,
-		),
+		ApplyURI(mongoDbString).
+		SetRegistry(reg),
 	)
 	if err != nil {
 		panic("Not able to create mongodb connection: " + err.Error())
