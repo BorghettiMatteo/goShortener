@@ -49,6 +49,10 @@ func GetPastaBin(c *fiber.Ctx) error {
 			return c.SendStatus(http.StatusInternalServerError)
 		}
 	}
+
+	if redirect := c.Query("redirect"); redirect == "true" {
+		c.Context().Redirect(retrivedMex.Body, http.StatusTemporaryRedirect)
+	}
 	c.JSON(retrivedMex.Body)
 	return c.SendStatus(http.StatusFound)
 }
