@@ -10,7 +10,7 @@ services:
 
   mongodb:
     image: mongo
-    hotname: mongodb
+    hostname: mongodb
     ports:
       - "27017:27017"
 
